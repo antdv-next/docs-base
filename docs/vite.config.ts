@@ -7,10 +7,13 @@ import autoImport from 'unplugin-auto-import/vite'
 import components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 import { tsxResolveTypes } from 'vite-plugin-tsx-resolve-types'
+import { mdPlugin } from './plugins/markdown'
+import { postcssIsolateStyles } from './plugins/markdown/isolateStyles'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    mdPlugin(),
     vue({
       include: [/\.vue$/, /\.md$/],
     }),
@@ -40,6 +43,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
+  css: {
+    postcss: {
+      plugins: [
+        postcssIsolateStyles(),
+      ],
     },
   },
 })

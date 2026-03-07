@@ -12,6 +12,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AButton: typeof import('antdv-next')['Button']
+    AFlex: typeof import('antdv-next')['Flex']
+    ASkeleton: typeof import('antdv-next')['Skeleton']
+    ATag: typeof import('antdv-next')['Tag']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
@@ -19,6 +23,10 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const AButton: typeof import('antdv-next')['Button']
+  const AFlex: typeof import('antdv-next')['Flex']
+  const ASkeleton: typeof import('antdv-next')['Skeleton']
+  const ATag: typeof import('antdv-next')['Tag']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
 }

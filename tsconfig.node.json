@@ -25,6 +25,7 @@
     "playwright.config.*",
     "eslint.config.*",
     "docs/vite.config.ts",
-    "uno.config.ts"
+    "uno.config.ts",
+    "plugins/**/*"
   ]
 }
