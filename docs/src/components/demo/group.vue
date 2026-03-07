@@ -23,7 +23,7 @@ const slots = useSlots()
 const pageInfo = inject<DocPage | null>('__pageInfo__', null)
 const containerRef = ref<HTMLElement>()
 const containerWidth = ref(0)
-const gap = 16
+const gap = 8
 const minColumnWidth = 420
 let resizeObserver: ResizeObserver | null = null
 
@@ -88,20 +88,20 @@ onUnmounted(() => {
 
 <style scoped>
 .demo-group {
-  --demo-gap: 16px;
-
   display: flex;
-  gap: var(--demo-gap);
+  margin: calc(var(--demo-gap) * -1);
   margin-bottom: 24px;
 }
 
 .demo-column {
   flex: 1;
   min-width: 0;
+  width: 0;
+  padding: var(--demo-gap);
 }
 
 .demo-column :deep(> *) {
-  margin-bottom: var(--demo-gap);
+  margin-bottom: calc(var(--demo-gap) * 2);
 }
 
 .demo-column :deep(> *:last-child) {

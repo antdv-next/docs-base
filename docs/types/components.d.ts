@@ -12,10 +12,14 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AApp: typeof import('antdv-next')['App']
     AButton: typeof import('antdv-next')['Button']
     AFlex: typeof import('antdv-next')['Flex']
     ASkeleton: typeof import('antdv-next')['Skeleton']
+    ATabPane: typeof import('antdv-next')['TabPane']
+    ATabs: typeof import('antdv-next')['Tabs']
     ATag: typeof import('antdv-next')['Tag']
+    ATooltip: typeof import('antdv-next')['Tooltip']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }
@@ -23,10 +27,14 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const AApp: typeof import('antdv-next')['App']
   const AButton: typeof import('antdv-next')['Button']
   const AFlex: typeof import('antdv-next')['Flex']
   const ASkeleton: typeof import('antdv-next')['Skeleton']
+  const ATabPane: typeof import('antdv-next')['TabPane']
+  const ATabs: typeof import('antdv-next')['Tabs']
   const ATag: typeof import('antdv-next')['Tag']
+  const ATooltip: typeof import('antdv-next')['Tooltip']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
 }

@@ -22,19 +22,6 @@ It covers custom containers, anchors, Shiki code highlighting, and `demo/*.vue` 
   <demo src="./demo/basic.vue">Basic example</demo>
 </demo-group>
 
-## Code Group
-
-::: code-group
-```ts [TypeScript]
-const message: string = 'hello docs'
-console.log(message)
-```
-
-```js [JavaScript]
-const message = 'hello docs'
-console.log(message)
-```
-:::
 
 ## API
 

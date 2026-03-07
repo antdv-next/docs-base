@@ -22,19 +22,6 @@ demo:
   <demo src="./demo/basic.vue">基础示例</demo>
 </demo-group>
 
-## 代码组
-
-::: code-group
-```ts [TypeScript]
-const message: string = 'hello docs'
-console.log(message)
-```
-
-```js [JavaScript]
-const message = 'hello docs'
-console.log(message)
-```
-:::
 
 ## API
 

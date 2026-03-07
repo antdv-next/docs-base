@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { useCopyCode } from '@/components/demo/copy-code'
+
+useCopyCode()
 </script>
 
 <template>
-  <RouterView />
+  <a-app>
+    <router-view />
+  </a-app>
 </template>
