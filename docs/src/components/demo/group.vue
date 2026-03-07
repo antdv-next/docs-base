@@ -88,6 +88,8 @@ onUnmounted(() => {
 
 <style scoped>
 .demo-group {
+  --demo-gap: 16px;
+
   display: flex;
   margin: calc(var(--demo-gap) * -1);
   margin-bottom: 24px;

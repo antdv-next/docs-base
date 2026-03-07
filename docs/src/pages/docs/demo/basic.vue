@@ -1,9 +1,9 @@
 <docs lang="zh-CN">
-这是从参考仓库迁移过来的 demo 能力示例。`<demo>` 会解析 `src`，读取当前文件源码，并把这个说明块作为描述区渲染出来。
+这是从参考仓库迁移过来的 demo 能力示例。`demo` 会解析 `src`，读取当前文件源码，并把这个说明块作为描述区渲染出来。
 </docs>
 
 <docs lang="en-US">
-This demo exercises the migrated `<demo>` pipeline. The docs block becomes the description, and the source is extracted automatically.
+This demo exercises the migrated `demo` pipeline. The docs block becomes the description, and the source is extracted automatically.
 </docs>
 
 <script setup lang="ts">
