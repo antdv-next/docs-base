@@ -14,6 +14,16 @@ function toRelativePath(absolutePath: string, root: string) {
     : normalizedPath
 }
 
+function isDemoFile(filePath: string, root: string, patterns: string[]) {
+  const relativePath = toRelativePath(filePath, root)
+  return patterns.some(pattern => pm.isMatch(relativePath, pattern))
+}
+
+function toDemoKey(filePath: string, root: string) {
+  const relativePath = toRelativePath(filePath, root)
+  return relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+}
+
 async function parseDemoFile(filePath: string, md: ReturnType<ReturnType<typeof createMarkdown>>) {
   const code = await fs.readFile(filePath, 'utf-8')
   const { descriptor } = parse(code, {
@@ -60,10 +70,43 @@ export function demoPlugin(): PluginOption {
   const RESOLVED_VIRTUAL_MODULE_ID = `\0${VIRTUAL_MODULE_ID}`
   const DEMO_SUFFIX = 'demo=true'
   const DEMO_GLOB = ['/src/pages/**/demo/*.vue']
+  const DEMO_REGISTRY_ADD_EVENT = 'demo-registry:add'
+  const DEMO_REGISTRY_REMOVE_EVENT = 'demo-registry:remove'
 
   return {
     name: 'vite:demo',
     enforce: 'pre',
+    configureServer(server) {
+      const handleDemoAdd = (filePath: string) => {
+        if (!isDemoFile(filePath, server.config.root, DEMO_GLOB))
+          return
+
+        server.ws.send({
+          type: 'custom',
+          event: DEMO_REGISTRY_ADD_EVENT,
+          data: {
+            id: toDemoKey(filePath, server.config.root),
+            timestamp: Date.now(),
+          },
+        })
+      }
+
+      const handleDemoRemove = (filePath: string) => {
+        if (!isDemoFile(filePath, server.config.root, DEMO_GLOB))
+          return
+
+        server.ws.send({
+          type: 'custom',
+          event: DEMO_REGISTRY_REMOVE_EVENT,
+          data: {
+            id: toDemoKey(filePath, server.config.root),
+          },
+        })
+      }
+
+      server.watcher.on('add', handleDemoAdd)
+      server.watcher.on('unlink', handleDemoRemove)
+    },
     async resolveId(id, importer) {
       if (id === VIRTUAL_MODULE_ID)
         return RESOLVED_VIRTUAL_MODULE_ID
@@ -82,7 +125,42 @@ export function demoPlugin(): PluginOption {
         return 'export default {}'
 
       if (id === RESOLVED_VIRTUAL_MODULE_ID) {
-        return `const rawDemos = import.meta.glob(${JSON.stringify(DEMO_GLOB)}, { query: { demo: 'true' }, eager: true, import: 'default' }); export default rawDemos;`
+        return `
+import { shallowReactive } from 'vue'
+
+const initialDemos = import.meta.glob(${JSON.stringify(DEMO_GLOB)}, {
+  query: { demo: 'true' },
+  eager: true,
+  import: 'default',
+})
+
+const demos = shallowReactive({ ...initialDemos })
+
+async function registerDemo(id, timestamp = Date.now()) {
+  const mod = await import(/* @vite-ignore */ \`\${id}?demo=true&t=\${timestamp}\`)
+  demos[id] = mod.default ?? mod
+}
+
+function removeDemo(id) {
+  delete demos[id]
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept()
+  import.meta.hot.on(${JSON.stringify(DEMO_REGISTRY_ADD_EVENT)}, async (data) => {
+    if (!data?.id)
+      return
+    await registerDemo(data.id, data.timestamp)
+  })
+  import.meta.hot.on(${JSON.stringify(DEMO_REGISTRY_REMOVE_EVENT)}, (data) => {
+    if (!data?.id)
+      return
+    removeDemo(data.id)
+  })
+}
+
+export default demos
+`
       }
 
       if (id.startsWith('\0') && id.includes(DEMO_SUFFIX)) {
@@ -132,9 +210,7 @@ export default demoData
       }
     },
     async handleHotUpdate(ctx) {
-      const relativePath = toRelativePath(ctx.file, ctx.server.config.root)
-      const isDemo = DEMO_GLOB.some(pattern => pm.isMatch(relativePath, pattern))
-      if (!isDemo)
+      if (!isDemoFile(ctx.file, ctx.server.config.root, DEMO_GLOB))
         return
 
       const normalizedFile = normalizePath(ctx.file)
