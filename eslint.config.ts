@@ -9,5 +9,6 @@ export default antfu({
   },
   rules: {
     'vue/valid-v-slot': 'off',
+    'ts/no-empty-object-type': 'off',
   },
 })

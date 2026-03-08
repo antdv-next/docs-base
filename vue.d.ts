@@ -1,37 +1,27 @@
 import type {
-  AllowedComponentProps,
-  ComponentCustomProps,
   ComponentObjectPropsOptions,
   ComponentOptions,
-  ComponentPublicInstance,
-  DefineSetupFnComponent,
+  ComponentOptionsMixin,
+  DefineComponent,
   EmitsOptions,
+  PublicProps,
   RenderFunction,
   SetupContext,
   SlotsType,
-  VNodeProps,
 } from 'vue'
 
-type PublicProps = VNodeProps & AllowedComponentProps & ComponentCustomProps
+type EmitArgs<T>
+  = T extends (...a: infer A) => any ? A : T extends any[] ? T : never
 
 type EmitFnFromRecord<E> = <
   K extends Extract<keyof E, string>,
 >(
   event: K,
-  ...args: E[K] extends (...a: infer A) => any ? A : never
+  ...args: EmitArgs<E[K]>
 ) => void
 
-type EmitsToPropsLoose<E> = {
-  [K in Extract<keyof E, string> as `on${Capitalize<K>}`]?: (
-    ...args: E[K] extends (...a: infer A) => any ? A : any[]
-  ) => any
-}
-
-interface WithTypedEmits<Props, E> {
-  new (): ComponentPublicInstance & {
-    $emit: EmitFnFromRecord<E>
-    $props: Props & EmitsToPropsLoose<E> & PublicProps
-  }
+type NormalizeEmits<E extends object> = {
+  [K in Extract<keyof E, string>]: (...args: EmitArgs<E[K]>) => any
 }
 
 type SetupContextLoose<E, S extends SlotsType>
@@ -40,12 +30,11 @@ type SetupContextLoose<E, S extends SlotsType>
 declare module 'vue' {
   /**
    * - E 不要求 EmitsOptions（无需索引签名）
-   * - 用 __typeEmits 把“真实事件类型”喂给 language-tools
-   * - 返回仍保持 DefineSetupFnComponent<Props, EmitsOptions, S>，不破坏既有提示
+   * - 返回尽量贴近 Vue 原生 DefineComponent 产物形状
    */
   export function defineComponent<
     Props extends Record<string, any>,
-    E extends Record<string, any> = any,
+    E extends object = {},
     EE extends string = string,
     S extends SlotsType = any,
   >(
@@ -60,11 +49,25 @@ declare module 'vue' {
       __typeEmits?: E
       __typeProps?: Props
     },
-  ): DefineSetupFnComponent<Props, EmitsOptions, S> & WithTypedEmits<Props, E>
+  ): DefineComponent<
+    Props,
+    {},
+    {},
+    {},
+    {},
+    ComponentOptionsMixin,
+    ComponentOptionsMixin,
+    NormalizeEmits<E>,
+    EE,
+    PublicProps,
+    Readonly<Props>,
+    {},
+    S
+  >
 
   export function defineComponent<
     Props extends Record<string, any>,
-    E extends Record<string, any> = any,
+    E extends object = {},
     EE extends string = string,
     S extends SlotsType = any,
   >(
@@ -79,7 +82,21 @@ declare module 'vue' {
       __typeEmits?: E
       __typeProps?: Props
     },
-  ): DefineSetupFnComponent<Props, EmitsOptions, S> & WithTypedEmits<Props, E>
+  ): DefineComponent<
+    Props,
+    {},
+    {},
+    {},
+    {},
+    ComponentOptionsMixin,
+    ComponentOptionsMixin,
+    NormalizeEmits<E>,
+    EE,
+    PublicProps,
+    Readonly<Props>,
+    {},
+    S
+  >
 }
 
 export {}

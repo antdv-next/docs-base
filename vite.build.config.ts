@@ -28,7 +28,6 @@ export default defineConfig({
     dts({
       tsconfigPath: './tsconfig.app.json',
       entryRoot: 'components',
-      exclude: ['vue.d.ts'],
       processor: 'vue',
     }),
   ],
