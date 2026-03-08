@@ -5,6 +5,7 @@ import { tsxResolveTypes } from 'vite-plugin-tsx-resolve-types'
 import vueResolveTypes from 'vite-plugin-vue-resolve-types'
 
 export default defineConfig({
+  base: './',
   plugins: [
     vueResolveTypes(),
     vue(),

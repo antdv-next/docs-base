@@ -4,6 +4,7 @@ const PAGE_MODULES = import.meta.glob('../pages/**/*.md')
 
 export const LOCALE_ZH_CN = 'zh-CN'
 export const LOCALE_EN_US = 'en-US'
+// 设置默认的语言环境
 export const DEFAULT_LOCALE = LOCALE_ZH_CN
 
 export const LOCALE_FILE_SEGMENT_ZH_CN = LOCALE_ZH_CN

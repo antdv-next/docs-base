@@ -13,6 +13,11 @@ const files = globSync([
 ]).map(file => `./${file}`)
 
 export default defineConfig({
+  base: './',
+  // has worker format es
+  // worker: {
+  //   format: 'es',
+  // },
   plugins: [
     vueResolveTypes(),
     vue(),
