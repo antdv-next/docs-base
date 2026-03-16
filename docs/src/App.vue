@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseConfig from '@/components/config/base.vue'
+import BaseConfig from "@/components/config/base.vue";
 </script>
 
 <template>

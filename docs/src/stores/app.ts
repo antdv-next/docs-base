@@ -1,17 +1,9 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
-export interface AppState {
+export interface AppState {}
 
-}
-
-export const useAppStore = defineStore('app', {
-  state: (): AppState => ({
-
-  }),
-  actions: {
-
-  },
-  getters: {
-
-  },
-})
+export const useAppStore = defineStore("app", {
+  state: (): AppState => ({}),
+  actions: {},
+  getters: {},
+});

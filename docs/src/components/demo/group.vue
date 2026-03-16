@@ -1,68 +1,71 @@
 <script setup lang="ts">
-import type { VNode } from 'vue'
-import { computed, onMounted, onUnmounted, ref, useSlots } from 'vue'
-import { usePageInfo } from '@/composables/doc-page'
+import type { VNode } from "vue";
+
+import { computed, onMounted, onUnmounted, ref, useSlots } from "vue";
+
+import { usePageInfo } from "@/composables/doc-page";
 
 defineOptions({
-  name: 'DemoGroup',
-})
+  name: "DemoGroup",
+});
 
 const props = defineProps<{
-  cols?: number
-}>()
+  cols?: number;
+}>();
 
-const slots = useSlots()
-const pageInfo = usePageInfo()
-const containerRef = ref<HTMLElement>()
-const containerWidth = ref(0)
-const gap = 8
-const minColumnWidth = 420
-let resizeObserver: ResizeObserver | null = null
+const slots = useSlots();
+const pageInfo = usePageInfo();
+const containerRef = ref<HTMLElement>();
+const containerWidth = ref(0);
+const gap = 8;
+const minColumnWidth = 420;
+let resizeObserver: ResizeObserver | null = null;
 
-const configuredCols = computed(() => props.cols || pageInfo?.frontmatter?.demo?.cols || 1)
+const configuredCols = computed(
+  () => props.cols || pageInfo?.frontmatter?.demo?.cols || 1,
+);
 const actualCols = computed(() => {
-  if (configuredCols.value <= 1)
-    return 1
-  if (containerWidth.value === 0)
-    return configuredCols.value
-  const maxPossibleCols = Math.floor((containerWidth.value + gap) / (minColumnWidth + gap))
-  return Math.max(1, Math.min(configuredCols.value, maxPossibleCols))
-})
+  if (configuredCols.value <= 1) return 1;
+  if (containerWidth.value === 0) return configuredCols.value;
+  const maxPossibleCols = Math.floor(
+    (containerWidth.value + gap) / (minColumnWidth + gap),
+  );
+  return Math.max(1, Math.min(configuredCols.value, maxPossibleCols));
+});
 
 const columns = computed(() => {
-  const children = (slots.default?.() || []).filter((node) => {
-    if (typeof node.children === 'string' && !node.children.trim())
-      return false
-    return node.type !== Comment
-  }) as VNode[]
+  const children = (slots.default?.() || []).filter(node => {
+    if (typeof node.children === "string" && !node.children.trim())
+      return false;
+    return node.type !== Comment;
+  }) as VNode[];
 
-  if (actualCols.value <= 1)
-    return [children]
+  if (actualCols.value <= 1) return [children];
 
-  const result: VNode[][] = Array.from({ length: actualCols.value }, () => [])
+  const result: VNode[][] = Array.from({ length: actualCols.value }, () => []);
   for (let i = 0; i < children.length; i++) {
-    result[i % actualCols.value]!.push(children[i]!)
+    result[i % actualCols.value]!.push(children[i]!);
   }
-  return result
-})
+  return result;
+});
 
 function updateContainerWidth() {
-  containerWidth.value = containerRef.value?.offsetWidth || 0
+  containerWidth.value = containerRef.value?.offsetWidth || 0;
 }
 
 onMounted(() => {
-  updateContainerWidth()
+  updateContainerWidth();
   if (containerRef.value && window.ResizeObserver) {
     resizeObserver = new ResizeObserver(() => {
-      window.requestAnimationFrame(updateContainerWidth)
-    })
-    resizeObserver.observe(containerRef.value)
+      window.requestAnimationFrame(updateContainerWidth);
+    });
+    resizeObserver.observe(containerRef.value);
   }
-})
+});
 
 onUnmounted(() => {
-  resizeObserver?.disconnect()
-})
+  resizeObserver?.disconnect();
+});
 </script>
 
 <template>
@@ -72,7 +75,11 @@ onUnmounted(() => {
     :class="pageInfo?.frontmatter?.demo?.class"
     :style="{ '--demo-gap': `${gap}px` }"
   >
-    <section v-for="(column, index) in columns" :key="index" class="demo-column">
+    <section
+      v-for="(column, index) in columns"
+      :key="index"
+      class="demo-column"
+    >
       <component :is="() => column" />
     </section>
   </div>

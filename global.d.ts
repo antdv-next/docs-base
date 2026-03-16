@@ -1,6 +1,5 @@
-export {}
+export {};
 
-declare module 'vue' {
-  export interface GlobalComponents {
-  }
+declare module "vue" {
+  export interface GlobalComponents {}
 }
