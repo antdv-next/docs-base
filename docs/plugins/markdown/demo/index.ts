@@ -1,53 +1,67 @@
-import type { PluginOption } from 'vite'
-import fs from 'node:fs/promises'
-import pm from 'picomatch'
-import { normalizePath } from 'vite'
-import { parse } from 'vue/compiler-sfc'
-import { createMarkdown, loadBaseMd, loadShiki } from '../markdown'
-import { tsToJs } from './tsToJs'
+import type { PluginOption } from "vite-plus";
+
+import fs from "node:fs/promises";
+import pm from "picomatch";
+import { normalizePath } from "vite-plus";
+import { parse } from "vue/compiler-sfc";
+
+import { createMarkdown, loadBaseMd, loadShiki } from "../markdown";
+import { tsToJs } from "./tsToJs";
 
 function toRelativePath(absolutePath: string, root: string) {
-  const normalizedPath = normalizePath(absolutePath)
-  const normalizedRoot = normalizePath(root)
+  const normalizedPath = normalizePath(absolutePath);
+  const normalizedRoot = normalizePath(root);
   return normalizedPath.startsWith(normalizedRoot)
     ? normalizedPath.slice(normalizedRoot.length)
-    : normalizedPath
+    : normalizedPath;
 }
 
 function isDemoFile(filePath: string, root: string, patterns: string[]) {
-  const relativePath = toRelativePath(filePath, root)
-  return patterns.some(pattern => pm.isMatch(relativePath, pattern))
+  const relativePath = toRelativePath(filePath, root);
+  return patterns.some(pattern => pm.isMatch(relativePath, pattern));
 }
 
 function toDemoKey(filePath: string, root: string) {
-  const relativePath = toRelativePath(filePath, root)
-  return relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+  const relativePath = toRelativePath(filePath, root);
+  return relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
 }
 
-async function parseDemoFile(filePath: string, md: ReturnType<ReturnType<typeof createMarkdown>>) {
-  const code = await fs.readFile(filePath, 'utf-8')
+async function parseDemoFile(
+  filePath: string,
+  md: ReturnType<ReturnType<typeof createMarkdown>>,
+) {
+  const code = await fs.readFile(filePath, "utf-8");
   const { descriptor } = parse(code, {
     filename: filePath,
     sourceMap: false,
-  })
+  });
 
-  const locales: Record<string, { html: string, title: string }> = {}
-  const docsBlocks = descriptor.customBlocks.filter(block => block.type === 'docs')
-  await Promise.all(docsBlocks.map(async (block) => {
-    const lang = typeof block.attrs.lang === 'string' ? block.attrs.lang : 'zh-CN'
-    const env: Record<string, unknown> = {}
-    const html = await md.renderAsync(block.content.trim(), env)
-    const formatterTitle = (env.formatters as { title?: string } | undefined)?.title
-    locales[lang] = {
-      html,
-      title: formatterTitle || (typeof env.title === 'string' ? env.title : ''),
-    }
-  }))
+  const locales: Record<string, { html: string; title: string }> = {};
+  const docsBlocks = descriptor.customBlocks.filter(
+    block => block.type === "docs",
+  );
+  await Promise.all(
+    docsBlocks.map(async block => {
+      const lang =
+        typeof block.attrs.lang === "string" ? block.attrs.lang : "zh-CN";
+      const env: Record<string, unknown> = {};
+      const html = await md.renderAsync(block.content.trim(), env);
+      const formatterTitle = (env.formatters as { title?: string } | undefined)
+        ?.title;
+      locales[lang] = {
+        html,
+        title:
+          formatterTitle || (typeof env.title === "string" ? env.title : ""),
+      };
+    }),
+  );
 
-  const sourceCode = code.replace(/<docs[^>]*>[\s\S]*?<\/docs>/g, '').trim()
-  const jsSourceCode = await tsToJs(sourceCode)
-  const sourceHtml = await md.renderAsync(`\`\`\`vue\n${sourceCode}\n\`\`\``)
-  const jsSourceHtml = await md.renderAsync(`\`\`\`vue\n${jsSourceCode}\n\`\`\``)
+  const sourceCode = code.replace(/<docs[^>]*>[\s\S]*?<\/docs>/g, "").trim();
+  const jsSourceCode = await tsToJs(sourceCode);
+  const sourceHtml = await md.renderAsync(`\`\`\`vue\n${sourceCode}\n\`\`\``);
+  const jsSourceHtml = await md.renderAsync(
+    `\`\`\`vue\n${jsSourceCode}\n\`\`\``,
+  );
 
   return {
     locales,
@@ -55,74 +69,70 @@ async function parseDemoFile(filePath: string, md: ReturnType<ReturnType<typeof 
     jsSourceCode,
     sourceHtml,
     jsSourceHtml,
-  }
+  };
 }
 
 export function demoPlugin(): PluginOption {
   const md = createMarkdown()({
     withPlugin: false,
     config(markdown) {
-      loadBaseMd(markdown)
-      loadShiki(markdown)
+      loadBaseMd(markdown);
+      loadShiki(markdown);
     },
-  })
-  const VIRTUAL_MODULE_ID = 'virtual:demos'
-  const RESOLVED_VIRTUAL_MODULE_ID = `\0${VIRTUAL_MODULE_ID}`
-  const DEMO_SUFFIX = 'demo=true'
-  const DEMO_GLOB = ['/src/pages/**/demo/*.vue']
-  const DEMO_REGISTRY_ADD_EVENT = 'demo-registry:add'
-  const DEMO_REGISTRY_REMOVE_EVENT = 'demo-registry:remove'
+  });
+  const VIRTUAL_MODULE_ID = "virtual:demos";
+  const RESOLVED_VIRTUAL_MODULE_ID = `\0${VIRTUAL_MODULE_ID}`;
+  const DEMO_SUFFIX = "demo=true";
+  const DEMO_GLOB = ["/src/pages/**/demo/*.vue"];
+  const DEMO_REGISTRY_ADD_EVENT = "demo-registry:add";
+  const DEMO_REGISTRY_REMOVE_EVENT = "demo-registry:remove";
 
   return {
-    name: 'vite:demo',
-    enforce: 'pre',
+    name: "vite:demo",
+    enforce: "pre",
     configureServer(server) {
       const handleDemoAdd = (filePath: string) => {
-        if (!isDemoFile(filePath, server.config.root, DEMO_GLOB))
-          return
+        if (!isDemoFile(filePath, server.config.root, DEMO_GLOB)) return;
 
         server.ws.send({
-          type: 'custom',
+          type: "custom",
           event: DEMO_REGISTRY_ADD_EVENT,
           data: {
             id: toDemoKey(filePath, server.config.root),
             timestamp: Date.now(),
           },
-        })
-      }
+        });
+      };
 
       const handleDemoRemove = (filePath: string) => {
-        if (!isDemoFile(filePath, server.config.root, DEMO_GLOB))
-          return
+        if (!isDemoFile(filePath, server.config.root, DEMO_GLOB)) return;
 
         server.ws.send({
-          type: 'custom',
+          type: "custom",
           event: DEMO_REGISTRY_REMOVE_EVENT,
           data: {
             id: toDemoKey(filePath, server.config.root),
           },
-        })
-      }
+        });
+      };
 
-      server.watcher.on('add', handleDemoAdd)
-      server.watcher.on('unlink', handleDemoRemove)
+      server.watcher.on("add", handleDemoAdd);
+      server.watcher.on("unlink", handleDemoRemove);
     },
     async resolveId(id, importer) {
-      if (id === VIRTUAL_MODULE_ID)
-        return RESOLVED_VIRTUAL_MODULE_ID
+      if (id === VIRTUAL_MODULE_ID) return RESOLVED_VIRTUAL_MODULE_ID;
 
       if (id.includes(DEMO_SUFFIX)) {
-        const resolved = await this.resolve(id, importer, { skipSelf: true })
-        if (resolved)
-          return `\0${resolved.id}`
+        const resolved = await this.resolve(id, importer, { skipSelf: true });
+        if (resolved) return `\0${resolved.id}`;
       }
     },
     async load(id) {
-      const [, query] = id.split('?')
-      const params = new URLSearchParams(query)
+      const [, query] = id.split("?");
+      const params = new URLSearchParams(query);
 
-      if (params.get('vue') !== null && params.get('type') === 'docs')
-        return 'export default {}'
+      if (params.get("vue") !== null && params.get("type") === "docs")
+        return "export default {}";
 
       if (id === RESOLVED_VIRTUAL_MODULE_ID) {
         return `
@@ -160,19 +170,19 @@ if (import.meta.hot) {
 }
 
 export default demos
-`
+`;
       }
 
-      if (id.startsWith('\0') && id.includes(DEMO_SUFFIX)) {
-        const virtualId = id.slice(1)
-        const [filePath] = virtualId.split('?')
-        if (!filePath)
-          return
+      if (id.startsWith("\0") && id.includes(DEMO_SUFFIX)) {
+        const virtualId = id.slice(1);
+        const [filePath] = virtualId.split("?");
+        if (!filePath) return;
 
-        const normalizedFile = normalizePath(filePath)
-        this.addWatchFile(filePath)
+        const normalizedFile = normalizePath(filePath);
+        this.addWatchFile(filePath);
 
-        const { locales, sourceCode, jsSourceCode, sourceHtml, jsSourceHtml } = await parseDemoFile(filePath, md)
+        const { locales, sourceCode, jsSourceCode, sourceHtml, jsSourceHtml } =
+          await parseDemoFile(filePath, md);
         return {
           code: `
 import { ref } from 'vue'
@@ -206,17 +216,17 @@ if (import.meta.hot) {
 export default demoData
 `,
           map: null,
-        }
+        };
       }
     },
     async handleHotUpdate(ctx) {
-      if (!isDemoFile(ctx.file, ctx.server.config.root, DEMO_GLOB))
-        return
+      if (!isDemoFile(ctx.file, ctx.server.config.root, DEMO_GLOB)) return;
 
-      const normalizedFile = normalizePath(ctx.file)
-      const { locales, sourceCode, jsSourceCode, sourceHtml, jsSourceHtml } = await parseDemoFile(ctx.file, md)
+      const normalizedFile = normalizePath(ctx.file);
+      const { locales, sourceCode, jsSourceCode, sourceHtml, jsSourceHtml } =
+        await parseDemoFile(ctx.file, md);
       ctx.server.ws.send({
-        type: 'custom',
+        type: "custom",
         event: `demo-update:${normalizedFile}`,
         data: {
           locales,
@@ -225,8 +235,8 @@ export default demoData
           html: sourceHtml,
           jsHtml: jsSourceHtml,
         },
-      })
-      return ctx.modules
+      });
+      return ctx.modules;
     },
-  }
+  };
 }

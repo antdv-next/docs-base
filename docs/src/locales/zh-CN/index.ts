@@ -1,5 +1,5 @@
-import antd from 'antdv-next/locale/zh_CN'
+import antd from "antdv-next/locale/zh_CN";
 
 export default {
   antd,
-}
+};

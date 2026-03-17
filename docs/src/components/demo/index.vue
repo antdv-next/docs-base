@@ -1,107 +1,128 @@
 <script setup lang="ts">
-import type { CSSProperties, Component } from 'vue'
-import { CheckOutlined, CopyOutlined } from '@antdv-next/icons'
-import { useClipboard } from '@vueuse/core'
-import demos from 'virtual:demos'
-import { computed, defineAsyncComponent, shallowRef } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import ExpandIcon from './expand-icon.vue'
+import type { CSSProperties, Component } from "vue";
+
+import { CheckOutlined, CopyOutlined } from "@antdv-next/icons";
+import { useClipboard } from "@vueuse/core";
+import demos from "virtual:demos";
+import { computed, defineAsyncComponent, shallowRef } from "vue";
+import { useRoute, useRouter } from "vue-router";
+
+import ExpandIcon from "./expand-icon.vue";
 
 defineOptions({
-  name: 'Demo',
-})
+  name: "Demo",
+});
 
-const props = withDefaults(defineProps<{
-  src: string
-  compact?: boolean
-  background?: string
-  simplify?: boolean
-}>(), {
-  compact: false,
-  background: '',
-  simplify: false,
-})
+const props = withDefaults(
+  defineProps<{
+    src: string;
+    compact?: boolean;
+    background?: string;
+    simplify?: boolean;
+  }>(),
+  {
+    compact: false,
+    background: "",
+    simplify: false,
+  },
+);
 
-const route = useRoute()
-const router = useRouter()
-const showCode = shallowRef(false)
-const codeType = shallowRef<'ts' | 'js'>('ts')
-const demo = computed(() => demos[props.src])
+const route = useRoute();
+const router = useRouter();
+const showCode = shallowRef(false);
+const codeType = shallowRef<"ts" | "js">("ts");
+const demo = computed(() => demos[props.src]);
 
 const preferredLocale = computed(() => {
-  return route.path.includes('/en') ? 'en-US' : 'zh-CN'
-})
+  return route.path.includes("/en") ? "en-US" : "zh-CN";
+});
 
 const description = computed(() => {
-  const locales = demo.value?.locales ?? {}
-  return locales[preferredLocale.value]?.html || locales['zh-CN']?.html || locales['en-US']?.html || Object.values(locales)[0]?.html || ''
-})
+  const locales = demo.value?.locales ?? {};
+  return (
+    locales[preferredLocale.value]?.html ||
+    locales["zh-CN"]?.html ||
+    locales["en-US"]?.html ||
+    Object.values(locales)[0]?.html ||
+    ""
+  );
+});
 
 const component = computed<Component | undefined>(() => {
-  if (typeof demo.value?.component === 'function')
-    return defineAsyncComponent(demo.value.component as () => Promise<Component>)
-  return demo.value?.component as Component | undefined
-})
+  if (typeof demo.value?.component === "function")
+    return defineAsyncComponent(
+      demo.value.component as () => Promise<Component>,
+    );
+  return demo.value?.component as Component | undefined;
+});
 
-const id = computed(() => props.src.replace(/^\/+/, '').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '-'))
-const hasJsSource = computed(() => Boolean(demo.value?.jsSource?.trim()))
-const activeCodeType = computed<'ts' | 'js'>({
+const id = computed(() =>
+  props.src
+    .replace(/^\/+/, "")
+    .replace(/\.[^.]+$/, "")
+    .replace(/[^\w-]+/g, "-"),
+);
+const hasJsSource = computed(() => Boolean(demo.value?.jsSource?.trim()));
+const activeCodeType = computed<"ts" | "js">({
   get() {
-    if (codeType.value === 'js' && hasJsSource.value)
-      return 'js'
-    return 'ts'
+    if (codeType.value === "js" && hasJsSource.value) return "js";
+    return "ts";
   },
   set(value) {
-    codeType.value = value
+    codeType.value = value;
   },
-})
+});
 const sourceCode = computed(() => {
-  if (activeCodeType.value === 'js')
-    return demo.value?.jsSource || demo.value?.source || ''
-  return demo.value?.source || ''
-})
+  if (activeCodeType.value === "js")
+    return demo.value?.jsSource || demo.value?.source || "";
+  return demo.value?.source || "";
+});
 const sourceHtml = computed(() => {
-  if (activeCodeType.value === 'js')
-    return demo.value?.jsHtml || demo.value?.html || ''
-  return demo.value?.html || ''
-})
+  if (activeCodeType.value === "js")
+    return demo.value?.jsHtml || demo.value?.html || "";
+  return demo.value?.html || "";
+});
 
 const { copied, copy } = useClipboard({
   source: sourceCode,
   legacy: true,
-})
+});
 
-const isActive = computed(() => route.hash === `#${id.value}`)
+const isActive = computed(() => route.hash === `#${id.value}`);
 const demoStyle = computed<CSSProperties>(() => {
-  const styles: CSSProperties = {}
+  const styles: CSSProperties = {};
   if (props.compact) {
-    styles.padding = '0'
-    styles.overflow = 'hidden'
+    styles.padding = "0";
+    styles.overflow = "hidden";
   }
-  if (props.background === 'grey')
-    styles.backgroundColor = 'var(--ant-color-bg-layout)'
-  return styles
-})
+  if (props.background === "grey")
+    styles.backgroundColor = "var(--ant-color-bg-layout)";
+  return styles;
+});
 const cls = computed(() => ({
-  'border-primary': isActive.value,
-  'ant-doc-demo-box-simplify': props.simplify,
-}))
+  "border-primary": isActive.value,
+  "ant-doc-demo-box-simplify": props.simplify,
+}));
 
 function toggleCode() {
-  showCode.value = !showCode.value
+  showCode.value = !showCode.value;
 }
 
 function navigateToAnchor(event: MouseEvent) {
-  event.preventDefault()
+  event.preventDefault();
   router.push({
     path: route.path,
     hash: `#${id.value}`,
-  })
+  });
 }
 </script>
 
 <template>
-  <section :id="id" class="ant-doc-demo-box border-solid border-color-split border-1px" :class="cls">
+  <section
+    :id="id"
+    class="ant-doc-demo-box border-solid border-color-split border-1px"
+    :class="cls"
+  >
     <template v-if="simplify">
       <section class="vp-raw ant-doc-demo-box-demo" :style="demoStyle">
         <component :is="component" v-if="component" />
@@ -126,15 +147,28 @@ function navigateToAnchor(event: MouseEvent) {
         <div v-if="description" class="ant-doc-demo-box-meta-description">
           <div v-html="description" />
         </div>
-        <a-flex class="ant-doc-demo-box-actions" wrap gap="middle" justify="center">
+        <a-flex
+          class="ant-doc-demo-box-actions"
+          wrap
+          gap="middle"
+          justify="center"
+        >
           <a-tooltip :title="copied ? '已复制' : '复制代码'">
-            <button class="ant-doc-demo-box-code-action" type="button" @click="copy()">
+            <button
+              class="ant-doc-demo-box-code-action"
+              type="button"
+              @click="copy()"
+            >
               <CheckOutlined v-if="copied" />
               <CopyOutlined v-else />
             </button>
           </a-tooltip>
           <a-tooltip :title="showCode ? '收起代码' : '展开代码'">
-            <button class="ant-doc-demo-box-expand-icon ant-doc-demo-box-code-action" type="button" @click="toggleCode">
+            <button
+              class="ant-doc-demo-box-expand-icon ant-doc-demo-box-code-action"
+              type="button"
+              @click="toggleCode"
+            >
               <ExpandIcon :expanded="showCode" />
             </button>
           </a-tooltip>
@@ -184,7 +218,8 @@ function navigateToAnchor(event: MouseEvent) {
 
 .ant-doc-demo-box.border-primary {
   border-color: var(--ant-color-primary);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ant-color-primary) 12%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--ant-color-primary) 12%, transparent);
 }
 
 .ant-doc-demo-box-demo {

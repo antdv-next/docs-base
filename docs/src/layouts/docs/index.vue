@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useDocPage } from '@/composables/doc-page'
+import { useDocPage } from "@/composables/doc-page";
 
-const { pageData, anchorItems } = useDocPage()
+const { pageData, anchorItems } = useDocPage();
 </script>
 
 <template>

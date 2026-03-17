@@ -7,10 +7,10 @@ This demo exercises the migrated `demo` pipeline. The docs block becomes the des
 </docs>
 
 <script setup lang="ts">
-import { CheckCircleFilled } from '@antdv-next/icons'
-import { ref } from 'vue'
+import { CheckCircleFilled } from "@antdv-next/icons";
+import { ref } from "vue";
 
-const count = ref(0)
+const count = ref(0);
 </script>
 
 <template>
@@ -21,8 +21,6 @@ const count = ref(0)
         <CheckCircleFilled />
       </template>
     </my-button>
-    <a-tag color="blue">
-      markdown + demo
-    </a-tag>
+    <a-tag color="blue"> markdown + demo </a-tag>
   </a-flex>
 </template>

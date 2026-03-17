@@ -1,14 +1,13 @@
-@import 'vars.css';
-@import 'vp-doc.css';
-@import 'vp-code.css';
-@import 'custom-block.css';
+@import "vars.css";
+@import "vp-doc.css";
+@import "vp-code.css";
+@import "custom-block.css";
 
 .markdown {
   line-height: 2;
   /*color: var(--ant-text-color);*/
   @apply color-text;
 }
-
 
 /*
  * Keep demo content (`vp-raw`) isolated from markdown layer typography/code styles.
@@ -40,8 +39,8 @@
     hr,
     pre,
     code,
-    div[class*='language-'],
-    [class*='language-'] *,
+    div[class*="language-"],
+    [class*="language-"] *,
     .custom-block,
     .custom-block *,
     .header-anchor

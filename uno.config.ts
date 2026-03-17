@@ -1,4 +1,4 @@
-import { presetAntd } from '@antdv-next/unocss'
+import { presetAntd } from "@antdv-next/unocss";
 import {
   defineConfig,
   presetAttributify,
@@ -7,14 +7,12 @@ import {
   presetWind3,
   transformerDirectives,
   transformerVariantGroup,
-} from 'unocss'
+} from "unocss";
 
 export default defineConfig({
   outputToCssLayers: true,
-  safelist: [
-  ],
-  theme: {
-  },
+  safelist: [],
+  theme: {},
   presets: [
     presetWind3(),
     presetAttributify(),
@@ -25,10 +23,6 @@ export default defineConfig({
     }),
     presetAntd(),
   ],
-  shortcuts: [
-  ],
-  transformers: [
-    transformerDirectives(),
-    transformerVariantGroup(),
-  ],
-})
+  shortcuts: [],
+  transformers: [transformerDirectives(), transformerVariantGroup()],
+});

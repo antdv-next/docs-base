@@ -1,33 +1,28 @@
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import { defineConfig } from 'vite'
-import { tsxResolveTypes } from 'vite-plugin-tsx-resolve-types'
-import vueResolveTypes from 'vite-plugin-vue-resolve-types'
+import vue from "@vitejs/plugin-vue";
+import vueJsx from "@vitejs/plugin-vue-jsx";
+import { tsxResolveTypes } from "vite-plugin-tsx-resolve-types";
+import vueResolveTypes from "vite-plugin-vue-resolve-types";
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  base: './',
+  base: "./",
   plugins: [
     vueResolveTypes(),
     vue(),
     tsxResolveTypes({
-      defaultPropsToUndefined: ['Boolean'],
+      defaultPropsToUndefined: ["Boolean"],
     }),
     vueJsx(),
   ],
   build: {
     rolldownOptions: {
-      external: [
-        'vue',
-        'antdv-next',
-        '@antdv-next/icons',
-        /^dayjs/,
-      ],
+      external: ["vue", "antdv-next", "@antdv-next/icons", /^dayjs/],
       output: {
         globals: {
-          'vue': 'Vue',
-          'antdv-next': 'antd',
-          '@antdv-next/icons': 'AntdIcons',
-          'dayjs': 'dayjs',
+          vue: "Vue",
+          "antdv-next": "antd",
+          "@antdv-next/icons": "AntdIcons",
+          dayjs: "dayjs",
           // plugins: 'dayjs_plugin',
           // like this
           // 'dayjs/plugin/advancedFormat': 'dayjs_plugin_advancedFormat',
@@ -36,10 +31,10 @@ export default defineConfig({
     },
     emptyOutDir: false,
     lib: {
-      entry: 'components/index.ts',
-      formats: ['umd'],
-      fileName: () => 'index.umd.js',
-      name: 'AntdComponents',
+      entry: "components/index.ts",
+      formats: ["umd"],
+      fileName: () => "index.umd.js",
+      name: "AntdComponents",
     },
   },
-})
+});

@@ -1,15 +1,16 @@
-import { fileURLToPath, URL } from 'node:url'
-import { AntdvNextResolver } from '@antdv-next/auto-import-resolver'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import unocss from 'unocss/vite'
-import autoImport from 'unplugin-auto-import/vite'
-import components from 'unplugin-vue-components/vite'
-import { defineConfig } from 'vite'
-import dayjs from 'vite-plugin-dayjs'
-import { tsxResolveTypes } from 'vite-plugin-tsx-resolve-types'
-import vueResolveTypes from 'vite-plugin-vue-resolve-types'
-import { mdPlugin } from './plugins/markdown'
+import { AntdvNextResolver } from "@antdv-next/auto-import-resolver";
+import vue from "@vitejs/plugin-vue";
+import vueJsx from "@vitejs/plugin-vue-jsx";
+import { fileURLToPath, URL } from "node:url";
+import unocss from "unocss/vite";
+import autoImport from "unplugin-auto-import/vite";
+import components from "unplugin-vue-components/vite";
+import dayjs from "vite-plugin-dayjs";
+import { tsxResolveTypes } from "vite-plugin-tsx-resolve-types";
+import vueResolveTypes from "vite-plugin-vue-resolve-types";
+import { defineConfig } from "vite-plus";
+
+import { mdPlugin } from "./plugins/markdown";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -20,39 +21,31 @@ export default defineConfig({
       include: [/\.vue$/, /\.md$/],
     }),
     tsxResolveTypes({
-      defaultPropsToUndefined: ['Boolean'],
+      defaultPropsToUndefined: ["Boolean"],
     }),
     vueJsx(),
     unocss(),
     dayjs(),
     autoImport({
-      dirs: [
-        './src/stores',
-      ],
-      dts: 'types/auto-imports.d.ts',
-      imports: [
-        'vue',
-        'vue-router',
-        '@vueuse/core',
-        'pinia',
-        'vue-i18n',
-      ],
+      dirs: ["./src/stores"],
+      dts: "types/auto-imports.d.ts",
+      imports: ["vue", "vue-router", "@vueuse/core", "pinia", "vue-i18n"],
     }),
     components({
-      dts: 'types/components.d.ts',
+      dts: "types/components.d.ts",
       dirs: [],
-      resolvers: [
-        AntdvNextResolver(),
-      ],
+      resolvers: [AntdvNextResolver()],
     }),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@org/components': fileURLToPath(new URL('../components', import.meta.url)),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@org/components": fileURLToPath(
+        new URL("../components", import.meta.url),
+      ),
     },
   },
   server: {
     port: 6878,
   },
-})
+});
