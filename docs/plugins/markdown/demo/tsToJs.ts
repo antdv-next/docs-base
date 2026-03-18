@@ -1,5 +1,3 @@
-import type { ESLint } from "eslint";
-
 import { transformWithOxc } from "vite-plus";
 
 const SCRIPT_BLOCK_REGEX = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
@@ -7,33 +5,32 @@ const SCRIPT_LANG_REGEX = /\blang\s*=\s*(['"]?)([\w-]+)\1/i;
 const TS_LANGS = new Set(["ts", "tsx", "mts", "cts"]);
 const EXPORT_MARKER_REGEX = /\n?export\s*\{\s*\};?\s*$/u;
 
-let eslintPromise: Promise<ESLint | null> | null = null;
+type OxfmtFormat = (typeof import("oxfmt"))["format"];
 
-async function getEslint() {
-  if (!eslintPromise) {
-    eslintPromise = (async () => {
+let oxfmtPromise: Promise<OxfmtFormat | null> | null = null;
+
+async function getOxfmtFormat() {
+  if (!oxfmtPromise) {
+    oxfmtPromise = (async () => {
       try {
-        const { ESLint } = await import("eslint");
-        return new ESLint({
-          fix: true,
-          fixTypes: ["layout"],
-        });
+        const { format } = await import("oxfmt");
+        return format;
       } catch {
         return null;
       }
     })();
   }
-  return eslintPromise;
+  return oxfmtPromise;
 }
 
 async function formatScript(code: string, lang: string) {
   try {
-    const eslint = await getEslint();
-    if (!eslint) return code;
+    const oxfmtFormat = await getOxfmtFormat();
+    if (!oxfmtFormat) return code;
 
     const filePath = `virtual-demo-script.${lang === "tsx" ? "jsx" : "js"}`;
-    const [result] = await eslint.lintText(code, { filePath });
-    return result?.output ?? code;
+    const result = await oxfmtFormat(filePath, code);
+    return result.errors.length > 0 ? code : result.code;
   } catch {
     return code;
   }
